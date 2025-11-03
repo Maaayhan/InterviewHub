@@ -6,7 +6,7 @@ module.exports = {
     env: process.env.TCB_ENV || 'mianshiya-test-xxx', // 改为你的云开发 id
     secretId: process.env.TCB_SECRET_ID || 'xxx',
     secretKey: process.env.TCB_SECRET_KEY || 'xxx',
-    credentials: process.env.TCB_CREDENTIALS_PATH 
+    credentials: process.env.TCB_CREDENTIALS_PATH
       ? require(process.env.TCB_CREDENTIALS_PATH)
       : (require('../service/login/tcb_custom_login_key(mianshiya-test-xxx).json') || {}),
   },
