@@ -1,0 +1,80 @@
+services:
+  # MongoDB 数据库
+  mongodb:
+    image: mongo:6
+    container_name: interviewhub-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - interviewhub-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: interviewhub-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - interviewhub-network
+
+  # 后端服务
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: interviewhub-backend
+    restart: unless-stopped
+    ports:
+      - "7592:7592"
+    environment:
+      - NODE_ENV=local
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - redis
+    networks:
+      - interviewhub-network
+
+  # 前端开发服务
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: interviewhub-frontend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - REACT_APP_ENV=dev
+      - MOCK=none
+      - UMI_ENV=dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - interviewhub-network
+    command: npm run start:dev
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  interviewhub-network:
+    driver: bridge
+
